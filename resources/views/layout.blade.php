@@ -67,7 +67,8 @@
             </button>
         </div>
         <div class="d-flex justify-content-center align-items-center text-white">
-            <a href="{{ ('dashboard') }}" class="text-white text-decoration-none">
+
+            <a href="{{ route('home') }}" class="text-white text-decoration-none">
                 <img src="https://i.ibb.co.com/FNckrp1/image.jpg" alt="image" class="me-3"
                     style="height: 50px; width: 50px;">
                 <b>PT Agung Mas Sentosa</b>
@@ -85,25 +86,36 @@
         <div class="py-4">
             {{-- Tampilkan role pengguna --}}
             @auth
-            <div class="px-3 mb-3">
-                <b class="d-block">{{ Auth::user()->name }}</b>
-                <small class="text-warning">{{ strtoupper(Auth::user()->role) }}</small>
-            </div>
+                <div class="px-3 mb-3">
+                    <b class="d-block">{{ Auth::user()->name }}</b>
+                    <small class="text-warning">{{ strtoupper(Auth::user()->role) }}</small>
+                </div>
             @endauth
             <hr>
+
             <div class="nav flex-column ">
 
-                {{-- MENU UNTUK SEMUA ROLE --}}
-                <a href="{{ route('dashboard') }}" class="nav-link text-white"><i class="bi bi-grid me-1"></i>
-                    Dashboard</a>
+                {{-- MENU KHUSUS ADMIN (Dashboard) --}}
+                @if (Auth::user()->isAdmin())
+                    <a href="{{ route('dashboard') }}" class="nav-link text-white"><i class="bi bi-grid me-1"></i>
+                        Dashboard</a>
+                @endif
 
-                {{-- MENU UNTUK ADMIN DAN GUDANG --}}
-                @if(Auth::user()->isAdmin() || Auth::user()->isGudang())
+                {{-- MENU UNTUK ADMIN, GUDANG, KASIR (Daftar Barang) --}}
+                @if (Auth::user()->isAdmin() || Auth::user()->isGudang() || Auth::user()->isKasir())
                     <a href="{{ route('barang.index') }}" class="nav-link text-white"><i class="bi bi-box-seam"></i>
                         Daftar Barang</a>
+                @endif
+
+                {{-- MENU UNTUK ADMIN DAN GUDANG --}}
+                @if (Auth::user()->isAdmin() || Auth::user()->isGudang())
                     <a href="{{ route('transaksi-masuk.index') }}" class="nav-link text-white"><i
                             class="bi bi-box-arrow-in-left"></i>
                         Barang Masuk</a>
+
+                    <a href="{{ route('mutasi-kondisi.create') }}" class="nav-link text-white"><i
+                            class="bi bi-arrow-repeat"></i>
+                        Mutasi Stok</a>
                     <a href="{{ route('barang.list') }}" class="nav-link text-white"><i
                             class="bi bi-clipboard-data me-1"></i> Laporan
                         Barang</a>
@@ -113,13 +125,13 @@
                 @endif
 
                 {{-- MENU UNTUK ADMIN DAN KASIR --}}
-                @if(Auth::user()->isAdmin() || Auth::user()->isKasir())
+                @if (Auth::user()->isAdmin() || Auth::user()->isKasir())
                     <a href="{{ route('transaksi-keluar.index') }}" class="nav-link text-white"><i
                             class="bi bi-box-arrow-right"></i></i> Barang Keluar</a>
                 @endif
 
-                {{-- MENU KHUSUS ADMIN --}}
-                @if(Auth::user()->isAdmin())
+                {{-- MENU KHUSUS ADMIN (Laporan Transaksi) --}}
+                @if (Auth::user()->isAdmin())
                     <a href="{{ route('laporan.index') }}" class="nav-link text-white"><i
                             class="bi bi-clipboard-data me-1"></i>
                         Laporan Transaksi</a>
@@ -131,6 +143,20 @@
 
     <div id="mainContent" class="main-content">
         <main class="container py-4">
+
+            @if (session('success'))
+                <div class="alert alert-success alert-dismissible fade show" role="alert">
+                    {{ session('success') }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            @endif
+
+            @if (session('error'))
+                <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                    {{ session('error') }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            @endif
             @yield('content')
         </main>
     </div>

@@ -6,7 +6,7 @@
     <div class="container py-4">
         <h3 class="mb-4">📊 Laporan Transaksi ({{ $label }})</h3>
 
-        {{-- 🔽 Filter --}}
+        {{-- 📊 Filter --}}
         <form method="GET" class="d-flex gap-2 align-items-center mb-4">
             <select name="filter" class="form-select" style="width:auto;" onchange="this.form.submit()">
                 <option value="week" {{ $filter == 'week' ? 'selected' : '' }}>Mingguan</option>
@@ -14,8 +14,9 @@
                 <option value="year" {{ $filter == 'year' ? 'selected' : '' }}>Tahunan</option>
             </select>
 
-            @if($filter == 'month')
-                <input type="month" name="month" class="form-control" value="{{ request('month', now()->format('Y-m')) }}">
+            @if ($filter == 'month')
+                <input type="month" name="month" class="form-control"
+                    value="{{ request('month', now()->format('Y-m')) }}">
             @elseif($filter == 'year')
                 <input type="number" name="year" class="form-control" min="2000" max="2100"
                     value="{{ request('year', now()->year) }}">
@@ -38,8 +39,8 @@
                 $todayStart = Carbon::now()->startOfWeek();
                 $disableNext = $currentStart->greaterThanOrEqualTo($todayStart);
 
-                $labelPeriode = $currentStart->format('d M') . ' - ' . $currentStart->copy()->endOfWeek()->format('d M Y');
-
+                $labelPeriode =
+                    $currentStart->format('d M') . ' - ' . $currentStart->copy()->endOfWeek()->format('d M Y');
             } elseif ($filter == 'month') {
                 $currentMonth = request('month')
                     ? Carbon::parse(request('month') . '-01')
@@ -49,7 +50,6 @@
                 $nextMonth = $currentMonth->copy()->addMonth();
                 $disableNext = $currentMonth->isSameMonth(Carbon::now());
                 $labelPeriode = $currentMonth->translatedFormat('F Y');
-
             } elseif ($filter == 'year') {
                 $currentYear = request('year')
                     ? Carbon::createFromDate(request('year'), 1, 1)
@@ -67,7 +67,7 @@
             <form method="GET" class="d-inline">
                 <input type="hidden" name="filter" value="{{ $filter }}">
 
-                @if($filter == 'week')
+                @if ($filter == 'week')
                     <input type="hidden" name="start" value="{{ $prevStart }}">
                 @elseif($filter == 'month')
                     <input type="hidden" name="month" value="{{ $prevMonth->format('Y-m') }}">
@@ -89,7 +89,7 @@
             <form method="GET" class="d-inline">
                 <input type="hidden" name="filter" value="{{ $filter }}">
 
-                @if($filter == 'week')
+                @if ($filter == 'week')
                     <input type="hidden" name="start" value="{{ $nextStart }}">
                 @elseif($filter == 'month')
                     <input type="hidden" name="month" value="{{ $nextMonth->format('Y-m') }}">
@@ -97,7 +97,8 @@
                     <input type="hidden" name="year" value="{{ $nextYear->year }}">
                 @endif
 
-                <button class="btn btn-outline-secondary btn-sm" type="submit" title="Berikutnya" {{ $disableNext ? 'disabled' : '' }}>
+                <button class="btn btn-outline-secondary btn-sm" type="submit" title="Berikutnya"
+                    {{ $disableNext ? 'disabled' : '' }}>
                     &rarr;
                 </button>
             </form>
@@ -105,7 +106,7 @@
 
 
 
-        {{-- 💵 CASH FLOW --}}
+        {{-- 📈 CASH FLOW --}}
         <div class="row mb-4">
             <div class="col-md-4">
                 <div class="card bg-success">
@@ -135,95 +136,99 @@
             </div>
         </div>
 
-        {{-- 📦 Transaksi Masuk --}}
+        {{-- 📈 Transaksi Masuk --}}
         <div class="card mb-4">
             <div class="card-header bg-primary text-white d-flex justify-content-between">
                 <div class="">Transaksi Masuk</div>
                 <div><a href="{{ route('transaksi-masuk.index') }}" class="text-white">Lihat Detail -->></a></div>
             </div>
             <div class="card-body">
-                <table class="table table-bordered table-striped">
-                    <thead>
-                        <tr>
-                            <th>Kode Transaksi</th>
-                            <th>Tanggal</th>
-                            <th>Supplier</th>
-                            <th>Qty</th>
-                            <th>Total Pembelian</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @forelse($transaksiMasuk as $tm)
-                                            <tr>
-                                                <td>{{ $tm->kode_transaksi }}</td>
-                                                <td>{{ $tm->created_at->format('d M Y') }}</td>
-                                                <td>{{ $tm->supplier }}</td>
-                                                <td>{{ $tm->qty }}</td>
-                                                <td>
-                                                    Rp
-                                                    {{number_format(
-                                $tm->details->sum(function ($detail) {
-                                    return $detail->harga_beli * $detail->jumlah; }),
-                                0,
-                                ',',
-                                '.'
-                            )
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                }}
-                                                </td>
-                                            </tr>
-                        @empty
+                <div class="table-responsive">
+                    <table class="table table-bordered table-striped">
+                        <thead>
                             <tr>
-                                <td colspan="4" class="text-center">Tidak ada data</td>
+                                <th>Kode Transaksi</th>
+                                <th>Tanggal</th>
+                                <th>Supplier</th>
+                                <th>Qty</th>
+                                <th>Total Pembelian</th>
                             </tr>
-                        @endforelse
-                    </tbody>
-                </table>
+                        </thead>
+                        <tbody>
+                            @forelse($transaksiMasuk as $tm)
+                                <tr>
+                                    <td>{{ $tm->kode_transaksi }}</td>
+                                    <td>{{ $tm->created_at->format('d M Y') }}</td>
+                                    <td>{{ $tm->supplier }}</td>
+                                    <td>{{ $tm->qty }}</td>
+                                    <td>
+                                        Rp
+                                        {{ number_format(
+                                            $tm->details->sum(function ($detail) {
+                                                return $detail->harga_beli * $detail->jumlah;
+                                            }),
+                                            0,
+                                            ',',
+                                            '.',
+                                        ) }}
+                                    </td>
+                                </tr>
+                            @empty
+                                <tr>
+                                    <td colspan="4" class="text-center">Tidak ada data</td>
+                                </tr>
+                            @endforelse
+                        </tbody>
+                    </table>
+                </div>
             </div>
         </div>
 
-        {{-- 📤 Transaksi Keluar --}}
+        {{-- 📈 Transaksi Keluar --}}
         <div class="card">
             <div class="card-header bg-success text-white d-flex justify-content-between">
                 <div>Transaksi Keluar</div>
                 <div><a href="{{ route('transaksi-keluar.index') }}" class="text-white">Lihat Detail -->></a></div>
             </div>
             <div class="card-body">
-                <table class="table table-bordered table-striped">
-                    <thead>
-                        <tr>
-                            <th>Kode Transaksi</th>
-                            <th>Tanggal</th>
-                            <th>Customer</th>
-                            <th>Qty</th>
-                            <th>Total Pendapatan</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @forelse($transaksiKeluar as $tk)
-                                            <tr>
-                                                <td>{{ $tk->kode_transaksi }}</td>
-                                                <td>{{ $tk->created_at->format('d M Y') }}</td>
-                                                <td>{{ $tk->customer }}</td>
-                                                <td>{{ $tk->qty }}</td>
-                                                <td>
-                                                    Rp
-                                                    {{number_format(
-                                $tk->details->sum(function ($detail) {
-                                    return $detail->harga_jual * $detail->jumlah; }),
-                                0,
-                                ',',
-                                '.'
-                            )
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                }}
-                                                </td>
-                                            </tr>
-                        @empty
+                <div class="table-responsive">
+                    <table class="table table-bordered table-striped">
+                        <thead>
                             <tr>
-                                <td colspan="4" class="text-center">Tidak ada data</td>
+                                <th>Kode Transaksi</th>
+                                <th>Tanggal</th>
+                                <th>Customer</th>
+                                <th>Qty</th>
+                                <th>Total Pendapatan</th>
                             </tr>
-                        @endforelse
-                    </tbody>
-                </table>
+                        </thead>
+                        <tbody>
+                            @forelse($transaksiKeluar as $tk)
+                                <tr>
+                                    <td>{{ $tk->kode_transaksi }}</td>
+                                    <td>{{ $tk->created_at->format('d M Y') }}</td>
+                                    <td>{{ $tk->customer }}</td>
+                                    <td>{{ $tk->qty }}</td>
+                                    <td>
+                                        Rp
+                                        {{ number_format(
+                                            $tk->details->sum(function ($detail) {
+                                                return $detail->harga_jual * $detail->jumlah;
+                                            }),
+                                            0,
+                                            ',',
+                                            '.',
+                                        ) }}
+                                    </td>
+                                </tr>
+                            @empty
+                                <tr>
+                                    <td colspan="4" class="text-center">Tidak ada data</td>
+                                </tr>
+                            @endforelse
+                        </tbody>
+                    </table>
+                </div>
             </div>
         </div>
     </div>

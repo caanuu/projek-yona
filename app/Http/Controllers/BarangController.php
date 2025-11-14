@@ -59,6 +59,7 @@ class BarangController extends Controller
      */
     public function show(Barang $barang)
     {
+        // Fungsi ini sepertinya tidak terpakai, tapi kita biarkan
         return view('barang.show', compact('barang'));
     }
 
@@ -72,7 +73,8 @@ class BarangController extends Controller
     }
 
     /**
-     * Update barang
+     * === FUNGSI UPDATE DIPERBARUI ===
+     * Logika mutasi dipindahkan ke MutasiKondisiController
      */
     public function update(Request $request, Barang $barang)
     {
@@ -80,10 +82,7 @@ class BarangController extends Controller
             'kode_barang' => 'required|unique:barangs,kode_barang,' . $barang->id,
             'nama_barang' => 'required',
             'jenis_barang' => 'required',
-            'mutasi_jumlah' => 'nullable|integer|min:1',
-            'from_status' => 'nullable|in:baik,rusak',
-            'to_status' => 'nullable|in:baik,rusak',
-            'mutasi_keterangan' => 'nullable|string',
+            'keterangan' => 'nullable|string', // Sesuaikan validasi
         ]);
 
         // Update master barang
@@ -94,26 +93,8 @@ class BarangController extends Controller
             'keterangan' => $request->keterangan,
         ]);
 
-        // Jika ada mutasi kondisi
-        if($request->mutasi_jumlah && $request->from_status && $request->to_status){
-            $mutasi = $barang->mutasiKondisis()->create([
-                'tanggal' => now(),
-                'jumlah' => $request->mutasi_jumlah,
-                'from_status' => $request->from_status,
-                'to_status' => $request->to_status,
-                'keterangan' => $request->mutasi_keterangan,
-            ]);
-
-            // Update stok master barang
-            if($request->from_status == 'baik' && $request->to_status == 'rusak'){
-                $barang->stok_baik -= $request->mutasi_jumlah;
-                $barang->stok_rusak += $request->mutasi_jumlah;
-            } elseif($request->from_status == 'rusak' && $request->to_status == 'baik'){
-                $barang->stok_rusak -= $request->mutasi_jumlah;
-                $barang->stok_baik += $request->mutasi_jumlah;
-            }
-            $barang->save();
-        }
+        // Logika mutasi yang membingungkan sudah dihapus dari sini.
+        // Mutasi stok sekarang ditangani oleh MutasiKondisiController.
 
         return redirect()->route('barang.index')->with('success', 'Barang berhasil diperbarui');
     }
@@ -121,16 +102,22 @@ class BarangController extends Controller
 
     /**
      * Hapus barang
+     * === DIPERBARUI DI SINI ===
      */
     public function destroy(Barang $barang)
     {
-        $barang->delete();
-        return redirect()->route('barang.index')->with('success', 'Barang berhasil dihapus');
+        // Menggunakan forceDelete() untuk menghapus permanen dari database
+        $barang->forceDelete();
+
+        return redirect()->route('barang.index')->with('success', 'Barang berhasil dihapus permanen');
     }
 
     public function rusak()
     {
-        $barangs = Barang::with('mutasiKondisis')->get();
+        $barangs = Barang::with('mutasiKondisis')
+                        ->where('stok_rusak', '>', 0)
+                        ->get();
+
         return view('barang.rusak', compact('barangs'));
     }
 

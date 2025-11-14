@@ -17,7 +17,7 @@
                     </select>
                 </div>
 
-                @if($filter == 'week')
+                @if ($filter == 'week')
                     <div class="col-md-3">
                         <label for="start" class="form-label">Mulai Minggu</label>
                         <input type="date" name="start" id="start" class="form-control"
@@ -27,8 +27,9 @@
                     <div class="col-md-2">
                         <label for="month" class="form-label">Bulan</label>
                         <select name="month" id="month" class="form-select">
-                            @for($m = 1; $m <= 12; $m++)
-                                <option value="{{ $m }}" {{ $m == request('month', now()->month) ? 'selected' : '' }}>
+                            @for ($m = 1; $m <= 12; $m++)
+                                <option value="{{ $m }}"
+                                    {{ $m == request('month', now()->month) ? 'selected' : '' }}>
                                     {{ Carbon\Carbon::create()->month($m)->translatedFormat('F') }}
                                 </option>
                             @endfor
@@ -52,7 +53,7 @@
                 </div>
             </form>
 
-            @if(!empty($label))
+            @if (!empty($label))
                 <p class="mt-3 fw-bold text-primary">Periode: {{ $label }}</p>
             @endif
         </div>
@@ -82,130 +83,151 @@
 
     <div id="print-area">
         <div id="print-transaksi-masuk">
-            @if(!empty($label))
+            @if (!empty($label))
                 <p class="mt-3 fw-bold text-primary">Periode: {{ $label }}</p>
             @endif
-            <table class="table table-bordered table-striped">
-                <thead class="table-primary">
-                    <tr>
-                        <th>No</th>
-                        <th>
-                            <a href="{{ route('transaksi-masuk.index', array_merge(request()->all(), [
-        'sort_by' => 'kode_transaksi',
-        'sort_order' => ($sortBy === 'kode_transaksi' && $sortOrder === 'asc') ? 'desc' : 'asc'
-    ])) }}">
-                                Kode Transaksi
-                                @if($sortBy === 'kode_transaksi')
-                                    {!! $sortOrder === 'asc' ? '&#9650;' : '&#9660;' !!}
-                                @endif
-                            </a>
-                        </th>
-                        <th>
-                            <a href="{{ route('transaksi-masuk.index', array_merge(request()->all(), [
-        'sort_by' => 'created_at',
-        'sort_order' => ($sortBy === 'created_at' && $sortOrder === 'asc') ? 'desc' : 'asc'
-    ])) }}">
-                                Tanggal
-                                @if($sortBy === 'created_at')
-                                    {!! $sortOrder === 'asc' ? '&#9650;' : '&#9660;' !!}
-                                @endif
-                            </a>
-                        </th>
-                        <th>
-                            <a href="{{ route('transaksi-masuk.index', array_merge(request()->all(), [
-        'sort_by' => 'supplier',
-        'sort_order' => ($sortBy === 'supplier' && $sortOrder === 'asc') ? 'desc' : 'asc'
-    ])) }}">
-                                Supplier
-                                @if($sortBy === 'supplier')
-                                    {!! $sortOrder === 'asc' ? '&#9650;' : '&#9660;' !!}
-                                @endif
-                            </a>
-                        </th>
-                        <th>
-                            <a href="{{ route('transaksi-masuk.index', array_merge(request()->all(), [
-        'sort_by' => 'pegawai_penerima',
-        'sort_order' => ($sortBy === 'pegawai_penerima' && $sortOrder === 'asc') ? 'desc' : 'asc'
-    ])) }}">
-                                Pegawai
-                                @if($sortBy === 'pegawai_penerima')
-                                    {!! $sortOrder === 'asc' ? '&#9650;' : '&#9660;' !!}
-                                @endif
-                            </a>
-                        </th>
-                        <th>Keterangan Transaksi</th>
-                        <th>Barang</th>
-                        <th>Jumlah</th>
-                        <th>Harga Beli</th>
-                    </tr>
-                </thead>
 
-                <tbody>
-                    @php $no = 1; @endphp
-                    @foreach($transaksiMasuks as $trx)
+            <div class="table-responsive">
+                <table class="table table-bordered table-striped">
+                    <thead class="table-primary">
                         <tr>
-                            <td>{{ $no++ }}</td>
-                            <td>{{ $trx->kode_transaksi }}</td>
-                            <td>{{ $trx->created_at->format('Y-m-d H:i') }}</td>
-                            <td>{{ $trx->supplier }}</td>
-                            <td>{{ $trx->pegawai_penerima }}</td>
-                            <td>{{ $trx->keterangan_masuk }}</td>
-                            {{-- Barang --}}
-                            <td>
-                                <ul class="mb-0 ps-3">
-                                    @foreach($trx->details as $detailBarang)
-                                        <li>{{ $detailBarang->barang->nama_barang }}</li>
-                                    @endforeach
-                                </ul>
-                            </td>
-
-                            {{-- Jumlah --}}
-                            <td>
-                                <ul class="mb-0 list-unstyled">
-                                    @foreach($trx->details as $detailBarang)
-                                        <li>{{ $detailBarang->jumlah }}</li>
-                                    @endforeach
-                                </ul>
-                            </td>
-
-                            {{-- Harga Beli --}}
-                            <td>
-                                <ul class="mb-0 list-unstyled">
-                                    @foreach($trx->details as $detailBarang)
-                                        <li>Rp {{ number_format($detailBarang->harga_beli, 0, ',', '.') }} / Item</li>
-                                    @endforeach
-                                </ul>
-                            </td>
+                            <th>No</th>
+                            <th>
+                                <a
+                                    href="{{ route(
+                                        'transaksi-masuk.index',
+                                        array_merge(request()->all(), [
+                                            'sort_by' => 'kode_transaksi',
+                                            'sort_order' => $sortBy === 'kode_transaksi' && $sortOrder === 'asc' ? 'desc' : 'asc',
+                                        ]),
+                                    ) }}">
+                                    Kode Transaksi
+                                    @if ($sortBy === 'kode_transaksi')
+                                        {!! $sortOrder === 'asc' ? '&#9650;' : '&#9660;' !!}
+                                    @endif
+                                </a>
+                            </th>
+                            <th>
+                                <a
+                                    href="{{ route(
+                                        'transaksi-masuk.index',
+                                        array_merge(request()->all(), [
+                                            'sort_by' => 'created_at',
+                                            'sort_order' => $sortBy === 'created_at' && $sortOrder === 'asc' ? 'desc' : 'asc',
+                                        ]),
+                                    ) }}">
+                                    Tanggal
+                                    @if ($sortBy === 'created_at')
+                                        {!! $sortOrder === 'asc' ? '&#9650;' : '&#9660;' !!}
+                                    @endif
+                                </a>
+                            </th>
+                            <th>
+                                <a
+                                    href="{{ route(
+                                        'transaksi-masuk.index',
+                                        array_merge(request()->all(), [
+                                            'sort_by' => 'supplier',
+                                            'sort_order' => $sortBy === 'supplier' && $sortOrder === 'asc' ? 'desc' : 'asc',
+                                        ]),
+                                    ) }}">
+                                    Supplier
+                                    @if ($sortBy === 'supplier')
+                                        {!! $sortOrder === 'asc' ? '&#9650;' : '&#9660;' !!}
+                                    @endif
+                                </a>
+                            </th>
+                            <th>
+                                <a
+                                    href="{{ route(
+                                        'transaksi-masuk.index',
+                                        array_merge(request()->all(), [
+                                            'sort_by' => 'pegawai_penerima',
+                                            'sort_order' => $sortBy === 'pegawai_penerima' && $sortOrder === 'asc' ? 'desc' : 'asc',
+                                        ]),
+                                    ) }}">
+                                    Pegawai
+                                    @if ($sortBy === 'pegawai_penerima')
+                                        {!! $sortOrder === 'asc' ? '&#9650;' : '&#9660;' !!}
+                                    @endif
+                                </a>
+                            </th>
+                            <th>Keterangan Transaksi</th>
+                            <th>Barang</th>
+                            <th>Jumlah</th>
+                            <th>Harga Beli</th>
                         </tr>
-                    @endforeach
-                </tbody>
-            </table>
+                    </thead>
+
+                    <tbody>
+                        @php $no = 1; @endphp
+                        @foreach ($transaksiMasuks as $trx)
+                            <tr>
+                                <td>{{ $no++ }}</td>
+                                <td>{{ $trx->kode_transaksi }}</td>
+                                <td>{{ $trx->created_at->format('Y-m-d H:i') }}</td>
+                                <td>{{ $trx->supplier }}</td>
+                                <td>{{ $trx->pegawai_penerima }}</td>
+                                <td>{{ $trx->keterangan_masuk }}</td>
+                                {{-- Barang --}}
+                                <td>
+                                    <ul class="mb-0 ps-3">
+                                        @foreach ($trx->details as $detailBarang)
+                                            <li>{{ $detailBarang->barang->nama_barang }}</li>
+                                        @endforeach
+                                    </ul>
+                                </td>
+
+                                {{-- Jumlah --}}
+                                <td>
+                                    <ul class="mb-0 list-unstyled">
+                                        @foreach ($trx->details as $detailBarang)
+                                            <li>{{ $detailBarang->jumlah }}</li>
+                                        @endforeach
+                                    </ul>
+                                </td>
+
+                                {{-- Harga Beli --}}
+                                <td>
+                                    <ul class="mb-0 list-unstyled">
+                                        @foreach ($trx->details as $detailBarang)
+                                            <li>Rp {{ number_format($detailBarang->harga_beli, 0, ',', '.') }} / Item</li>
+                                        @endforeach
+                                    </ul>
+                                </td>
+                            </tr>
+                        @endforeach
+                    </tbody>
+                </table>
+            </div>
         </div>
 
 
         {{-- DATA BARANG MASUK --}}
         <div id="print-barang-masuk">
             <h3 class="mt-5">Data Barang Yang Dibeli</h3>
-            @if(!empty($label))
+            @if (!empty($label))
                 <p class="mt-3 fw-bold text-primary">Periode: {{ $label }}</p>
             @endif
             <div class="mt-3">
-                <table class="table table-bordered table-striped">
-                    <thead class="table-success">
-                        <tr>
-                            <th>Nama Barang</th>
-                            <th>Jumlah</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @foreach($jumlahbarang as $item)
+                <div class="table-responsive">
+                    <table class="table table-bordered table-striped">
+                        <thead class="table-success">
                             <tr>
-                                <td>{{ $item->barang->nama_barang }}</td>
-                                <td>{{ $item->jumlah }}</td>
+                                <th>Nama Barang</th>
+                                <th>Jumlah</th>
                             </tr>
-                        @endforeach
-                    </tbody>
-                </table>
+                        </thead>
+                        <tbody>
+                            @foreach ($jumlahbarang as $item)
+                                <tr>
+                                    <td>{{ $item->barang->nama_barang }}</td>
+                                    <td>{{ $item->jumlah }}</td>
+                                </tr>
+                            @endforeach
+                        </tbody>
+                    </table>
+                </div>
             </div>
         </div>
     </div>
@@ -217,9 +239,18 @@
             const options = {
                 margin: 0.5,
                 filename: 'faktur_transaksi_masuk.pdf',
-                image: { type: 'jpeg', quality: 0.98 },
-                html2canvas: { scale: 2 },
-                jsPDF: { unit: 'in', format: 'a4', orientation: 'landscape' }
+                image: {
+                    type: 'jpeg',
+                    quality: 0.98
+                },
+                html2canvas: {
+                    scale: 2
+                },
+                jsPDF: {
+                    unit: 'in',
+                    format: 'a4',
+                    orientation: 'landscape'
+                }
             };
             html2pdf().set(options).from(element).save();
         }
@@ -230,9 +261,18 @@
             const options = {
                 margin: 0.5,
                 filename: 'faktur_transaksi_masuk.pdf',
-                image: { type: 'jpeg', quality: 0.98 },
-                html2canvas: { scale: 2 },
-                jsPDF: { unit: 'in', format: 'a4', orientation: 'landscape' }
+                image: {
+                    type: 'jpeg',
+                    quality: 0.98
+                },
+                html2canvas: {
+                    scale: 2
+                },
+                jsPDF: {
+                    unit: 'in',
+                    format: 'a4',
+                    orientation: 'landscape'
+                }
             };
             html2pdf().set(options).from(element).save();
         }
@@ -243,23 +283,21 @@
             const options = {
                 margin: 0.5,
                 filename: 'faktur_transaksi_masuk.pdf',
-                image: { type: 'jpeg', quality: 0.98 },
-                html2canvas: { scale: 2 },
-                jsPDF: { unit: 'in', format: 'a4', orientation: 'landscape' }
+                image: {
+                    type: 'jpeg',
+                    quality: 0.98
+                },
+                html2canvas: {
+                    scale: 2
+                },
+                jsPDF: {
+                    unit: 'in',
+                    format: 'a4',
+                    orientation: 'landscape'
+                }
             };
             html2pdf().set(options).from(element).save();
         }
     </script>
-    {{-- function downloadPDF() {
-    const element = document.getElementById('print-area');
-    const opt = {
-    margin: 0.5,
-    filename: 'faktur.pdf',
-    image: { type: 'jpeg', quality: 0.98 },
-    html2canvas: { scale: 2 },
-    jsPDF: { unit: 'in', format: 'a4', orientation: 'landscape' }
-    };
-    html2pdf().set(opt).from(element).save();
-    } --}}
 
 @endsection

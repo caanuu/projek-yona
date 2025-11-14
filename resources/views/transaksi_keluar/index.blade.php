@@ -17,7 +17,7 @@
                     </select>
                 </div>
 
-                @if($filter == 'week')
+                @if ($filter == 'week')
                     <div class="col-md-3">
                         <label for="start" class="form-label">Mulai Minggu</label>
                         <input type="date" name="start" id="start" class="form-control"
@@ -27,8 +27,9 @@
                     <div class="col-md-2">
                         <label for="month" class="form-label">Bulan</label>
                         <select name="month" id="month" class="form-select">
-                            @for($m = 1; $m <= 12; $m++)
-                                <option value="{{ $m }}" {{ $m == request('month', now()->month) ? 'selected' : '' }}>
+                            @for ($m = 1; $m <= 12; $m++)
+                                <option value="{{ $m }}"
+                                    {{ $m == request('month', now()->month) ? 'selected' : '' }}>
                                     {{ Carbon\Carbon::create()->month($m)->translatedFormat('F') }}
                                 </option>
                             @endfor
@@ -52,7 +53,7 @@
                 </div>
             </form>
 
-            @if(!empty($label))
+            @if (!empty($label))
                 <p class="mt-3 fw-bold text-primary">Periode: {{ $label }}</p>
             @endif
         </div>
@@ -84,109 +85,113 @@
     </div>
     <div id="print-area">
         <div id="print-transaksi-keluar">
-            @if(!empty($label))
+            @if (!empty($label))
                 <p class="mt-3 fw-bold text-primary">Periode: {{ $label }}</p>
             @endif
-            <table class="table table-bordered table-striped">
-                <thead class="table-primary">
-                    <tr>
-                        <th>No</th>
-                        <th>Kode Transaksi</th>
-                        <th>Customer</th>
-                        <th>Tanggal</th>
-                        <th>Barang</th>
-                        <th>Keterangan Transaksi</th>
-                        <th>Jumlah</th>
-                        <th>Harga Jual</th>
-                        <th>Pendapatan</th>
-                        <th>Aksi</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @php $no = 1; @endphp
-                    @foreach($transaksiKeluars as $trx)
-                                    <tr>
-                                        <td>{{ $no++ }}</td>
-                                        <td>{{ $trx->kode_transaksi }}</td>
-                                        <td>{{ $trx->customer }}</td>
-                                        <td>{{ $trx->created_at->format('Y-m-d H:i') }}</td>
+            <div class="table-responsive">
+                <table class="table table-bordered table-striped">
+                    <thead class="table-primary">
+                        <tr>
+                            <th>No</th>
+                            <th>Kode Transaksi</th>
+                            <th>Customer</th>
+                            <th>Tanggal</th>
+                            <th>Barang</th>
+                            <th>Keterangan Transaksi</th>
+                            <th>Jumlah</th>
+                            <th>Harga Jual</th>
+                            <th>Pendapatan</th>
+                            <th>Aksi</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @php $no = 1; @endphp
+                        @foreach ($transaksiKeluars as $trx)
+                            <tr>
+                                <td>{{ $no++ }}</td>
+                                <td>{{ $trx->kode_transaksi }}</td>
+                                <td>{{ $trx->customer }}</td>
+                                <td>{{ $trx->created_at->format('Y-m-d H:i') }}</td>
 
-                                        {{-- Kolom barang --}}
-                                        <td>
-                                            <ul class="mb-0 ps-3">
-                                                @foreach($trx->details as $detail)
-                                                    <li>{{ $detail->barang->nama_barang }}</li>
-                                                @endforeach
-                                            </ul>
-                                        </td>
+                                {{-- Kolom barang --}}
+                                <td>
+                                    <ul class="mb-0 ps-3">
+                                        @foreach ($trx->details as $detail)
+                                            <li>{{ $detail->barang->nama_barang }}</li>
+                                        @endforeach
+                                    </ul>
+                                </td>
 
-                                        <td>{{ $trx->keterangan_keluar }}</td>
+                                <td>{{ $trx->keterangan_keluar }}</td>
 
-                                        {{-- Kolom jumlah --}}
-                                        <td>
-                                            <ul class="mb-0 ps-3">
-                                                @foreach($trx->details as $detail)
-                                                    <li>{{ $detail->jumlah }}</li>
-                                                @endforeach
-                                            </ul>
-                                        </td>
+                                {{-- Kolom jumlah --}}
+                                <td>
+                                    <ul class="mb-0 ps-3">
+                                        @foreach ($trx->details as $detail)
+                                            <li>{{ $detail->jumlah }}</li>
+                                        @endforeach
+                                    </ul>
+                                </td>
 
-                                        {{-- Kolom harga jual --}}
-                                        <td>
-                                            <ul class="mb-0 ps-3">
-                                                @foreach($trx->details as $detail)
-                                                    <li>Rp {{ number_format($detail->harga_jual, 0, ',', '.') }}</li>
-                                                @endforeach
-                                            </ul>
-                                        </td>
-                                        <td>
-                                            Rp
-                                            {{number_format(
-                            $trx->details->sum(function ($detail) {
-                                return $detail->harga_jual * $detail->jumlah; }),
-                            0,
-                            ',',
-                            '.'
-                        )
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    }}
-                                        </td>
-                                        <td class="text-center">
-                                            <a href="{{ route('transaksi-keluar.print', $trx->id) }}" class="btn btn-sm btn-outline-primary"
-                                                target="_blank">
-                                                <i class="bi bi-printer"></i> Print
-                                            </a>
-                                        </td>
-                                    </tr>
-                    @endforeach
-                </tbody>
-            </table>
+                                {{-- Kolom harga jual --}}
+                                <td>
+                                    <ul class="mb-0 ps-3">
+                                        @foreach ($trx->details as $detail)
+                                            <li>Rp {{ number_format($detail->harga_jual, 0, ',', '.') }}</li>
+                                        @endforeach
+                                    </ul>
+                                </td>
+                                <td>
+                                    Rp
+                                    {{ number_format(
+                                        $trx->details->sum(function ($detail) {
+                                            return $detail->harga_jual * $detail->jumlah;
+                                        }),
+                                        0,
+                                        ',',
+                                        '.',
+                                    ) }}
+                                </td>
+                                <td class="text-center">
+                                    <a href="{{ route('transaksi-keluar.print', $trx->id) }}"
+                                        class="btn btn-sm btn-outline-primary" target="_blank">
+                                        <i class="bi bi-printer"></i> Print
+                                    </a>
+                                </td>
+                            </tr>
+                        @endforeach
+                    </tbody>
+                </table>
+            </div>
         </div>
 
 
         <div id="print-barang-keluar">
             <h3 class="mt-5">Data Barang Yang Terjual</h3>
             <div class="mt-3">
-                @if(!empty($label))
+                @if (!empty($label))
                     <p class="mt-3 fw-bold text-primary">Periode: {{ $label }}</p>
                 @endif
-                <table class="table table-bordered table-striped">
-                    <thead class="table-success">
-                        <tr>
-                            <th>Nama Barang</th>
-                            <th>Jumlah Terjual</th>
-                            <th>Total Pendapatan</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @foreach($jumlahbarang as $item)
+                <div class="table-responsive">
+                    <table class="table table-bordered table-striped">
+                        <thead class="table-success">
                             <tr>
-                                <td>{{ $item->barang->nama_barang }}</td>
-                                <td>{{ $item->jumlah }}</td>
-                                <td>Rp {{ number_format($item->pendapatan, 0, ',', '.') }}</td>
+                                <th>Nama Barang</th>
+                                <th>Jumlah Terjual</th>
+                                <th>Total Pendapatan</th>
                             </tr>
-                        @endforeach
-                    </tbody>
-                </table>
+                        </thead>
+                        <tbody>
+                            @foreach ($jumlahbarang as $item)
+                                <tr>
+                                    <td>{{ $item->barang->nama_barang }}</td>
+                                    <td>{{ $item->jumlah }}</td>
+                                    <td>Rp {{ number_format($item->pendapatan, 0, ',', '.') }}</td>
+                                </tr>
+                            @endforeach
+                        </tbody>
+                    </table>
+                </div>
             </div>
         </div>
     </div>
@@ -198,9 +203,18 @@
             const options = {
                 margin: 0.5,
                 filename: 'faktur_transaksi_keluar.pdf',
-                image: { type: 'jpeg', quality: 0.98 },
-                html2canvas: { scale: 2 },
-                jsPDF: { unit: 'in', format: 'a4', orientation: 'landscape' }
+                image: {
+                    type: 'jpeg',
+                    quality: 0.98
+                },
+                html2canvas: {
+                    scale: 2
+                },
+                jsPDF: {
+                    unit: 'in',
+                    format: 'a4',
+                    orientation: 'landscape'
+                }
             };
             html2pdf().set(options).from(element).save();
         }
@@ -211,9 +225,18 @@
             const options = {
                 margin: 0.5,
                 filename: 'faktur_transaksi_keluar.pdf',
-                image: { type: 'jpeg', quality: 0.98 },
-                html2canvas: { scale: 2 },
-                jsPDF: { unit: 'in', format: 'a4', orientation: 'landscape' }
+                image: {
+                    type: 'jpeg',
+                    quality: 0.98
+                },
+                html2canvas: {
+                    scale: 2
+                },
+                jsPDF: {
+                    unit: 'in',
+                    format: 'a4',
+                    orientation: 'landscape'
+                }
             };
             html2pdf().set(options).from(element).save();
         }
@@ -224,9 +247,18 @@
             const options = {
                 margin: 0.5,
                 filename: 'faktur_transaksi_keluar.pdf',
-                image: { type: 'jpeg', quality: 0.98 },
-                html2canvas: { scale: 2 },
-                jsPDF: { unit: 'in', format: 'a4', orientation: 'landscape' }
+                image: {
+                    type: 'jpeg',
+                    quality: 0.98
+                },
+                html2canvas: {
+                    scale: 2
+                },
+                jsPDF: {
+                    unit: 'in',
+                    format: 'a4',
+                    orientation: 'landscape'
+                }
             };
             html2pdf().set(options).from(element).save();
         }
