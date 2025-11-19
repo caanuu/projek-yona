@@ -69,9 +69,9 @@
         <div class="d-flex justify-content-center align-items-center text-white">
 
             <a href="{{ route('home') }}" class="text-white text-decoration-none">
-                <img src="https://i.ibb.co.com/FNckrp1/image.jpg" alt="image" class="me-3"
-                    style="height: 50px; width: 50px;">
-                <b>PT Agung Mas Sentosa</b>
+                {{-- <img src="https://i.ibb.co.com/FNckrp1/image.jpg" alt="image" class="me-3"
+                    style="height: 50px; width: 50px;"> --}}
+                <b>PT. Surya Sukses Elektronik</b>
             </a>
         </div>
         <div class="d-flex justify-content-end p-3">

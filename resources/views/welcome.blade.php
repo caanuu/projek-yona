@@ -18,7 +18,7 @@
         }
 
         .login-card {
-            width: 380px;
+            width: 500px;
             border: none;
             border-radius: 20px;
             box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
@@ -81,8 +81,10 @@
 <body>
     <div class="login-card">
         <div class="login-header">
-            <img src="https://i.ibb.co.com/FNckrp1/image.jpg" alt="Admin Logo">
-            <h4 class="fw-bold mb-0">Login Admin</h4>
+            <h4 class="fw-bold mb-0">PT. Surya Sukses Elektronik</h4>
+            <br>
+            <p>Aplikasi Stok Barang - Surya Sukses Elektronik</p>
+            <h6>Login Admin</h6>
         </div>
         <div class="login-body">
             <form method="POST" action="/">
@@ -100,6 +102,7 @@
                     <label class="form-check-label" for="remember">Remember me</label>
                 </div>
                 <button type="submit" class="btn btn-primary w-100 py-2">Login</button>
+                <center><h8 class="text-muted">Masuk dengan akun admin atau petugas sesuai peran</h8></center>
             </form>
         </div>
     </div>
