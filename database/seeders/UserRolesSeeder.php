@@ -12,10 +12,10 @@ class UserRolesSeeder extends Seeder
     {
         // User Kasir
         DB::table('users')->updateOrInsert(
-            ['email' => 'kasir@ranggasoly.com'],
+            ['email' => 'kasir@yona.com'],
             [
-                'name' => 'Kasir User',
-                'email' => 'kasir@ranggasoly.com',
+                'name' => 'Kasir',
+                'email' => 'kasir@yona.com',
                 'password' => Hash::make('password123'),
                 'role' => 'kasir',
                 'created_at' => now(),
@@ -25,10 +25,10 @@ class UserRolesSeeder extends Seeder
 
         // User Gudang
         DB::table('users')->updateOrInsert(
-            ['email' => 'gudang@ranggasoly.com'],
+            ['email' => 'gudang@yona.com'],
             [
-                'name' => 'Gudang User',
-                'email' => 'gudang@ranggasoly.com',
+                'name' => 'Gudang',
+                'email' => 'gudang@yona.com',
                 'password' => Hash::make('password123'),
                 'role' => 'gudang',
                 'created_at' => now(),
