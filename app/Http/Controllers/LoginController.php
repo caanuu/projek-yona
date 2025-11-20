@@ -14,20 +14,21 @@ class LoginController extends Controller
 
     public function login(Request $request)
     {
+        // Validasi username, bukan email
         $credentials = $request->validate([
-            'email'    => ['required', 'email'],
+            'username' => ['required'],
             'password' => ['required'],
         ]);
 
+        // Auth::attempt akan otomatis mencocokkan key 'username' dengan kolom database
         if (Auth::attempt($credentials, $request->filled('remember'))) {
             $request->session()->regenerate();
 
-            // UBAH INI: dari 'dashboard' menjadi 'home'
             return redirect()->intended('home');
         }
 
         return back()->withErrors([
-            'email' => 'Email atau password salah.',
+            'username' => 'Username atau password salah.',
         ])->withInput();
     }
 

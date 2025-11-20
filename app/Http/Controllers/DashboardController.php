@@ -14,51 +14,37 @@ class DashboardController extends Controller
 {
     public function index(Request $request)
     {
-        $filter = $request->get('filter', 'month'); // default: bulan
+        $filter = $request->get('filter', 'month');
         $label = '';
         $dates = [];
+        $start = now(); $end = now();
 
-        // === FILTER HARIAN ===
+        // --- Filter Logic (Tetap Sama) ---
         if ($filter == 'day') {
             $start = $request->get('start') ? Carbon::parse($request->get('start')) : now()->startOfDay();
             $end   = $start->copy()->endOfDay();
             $label = 'Tanggal ' . $start->translatedFormat('d F Y');
-
             $dates = CarbonPeriod::create($start, $end)->toArray();
-        }
-
-        // === FILTER MINGGUAN ===
-        elseif ($filter == 'week') {
+        } elseif ($filter == 'week') {
             $start = $request->get('start') ? Carbon::parse($request->get('start')) : now()->startOfWeek();
             $end = $start->copy()->endOfWeek();
             $label = 'Minggu ' . $start->format('d M') . ' - ' . $end->format('d M Y');
-
             $dates = CarbonPeriod::create($start, $end)->toArray();
-        }
-
-        // === FILTER BULANAN ===
-        elseif ($filter == 'month') {
+        } elseif ($filter == 'month') {
             $month = $request->get('month', now()->month);
             $year  = $request->get('year', now()->year);
-
             $start = Carbon::create($year, $month, 1);
             $end   = $start->copy()->endOfMonth();
             $label = $start->translatedFormat('F Y');
-
             $dates = CarbonPeriod::create($start, $end)->toArray();
-        }
-
-        // === FILTER TAHUNAN ===
-        elseif ($filter == 'year') {
+        } elseif ($filter == 'year') {
             $year = $request->get('year', now()->year);
             $label = 'Tahun ' . $year;
-
             $start = Carbon::create($year, 1, 1);
             $end   = Carbon::create($year, 12, 31);
             $dates = CarbonPeriod::create($start, $end)->toArray();
         }
 
-        // Konversi ke string
         $dateStrings = array_map(fn($d) => $d->toDateString(), $dates);
 
         // === DATA PENJUALAN ===
@@ -74,6 +60,7 @@ class DashboardController extends Controller
             ->toArray();
 
         // === BARANG TERLARIS ===
+        // Pastikan relasi barang diload, tapi tidak memanggil jenis_barang
         $barangTerlaris = DetailBarang::with('barang')
             ->select('barang_id', DB::raw('SUM(jumlah) as total_terjual'))
             ->whereNull('transaksi_masuk_id')
@@ -89,46 +76,50 @@ class DashboardController extends Controller
             ->get();
 
         // === STOK MENIPIS ===
-        $stokMenipis = Barang::where('stok_baik', '<', 50)
+        $stokMenipis = Barang::with('kategori') // Load kategori
+            ->where('stok_baik', '<', 50)
             ->orderBy('stok_baik', 'asc')
             ->take(5)
             ->get();
 
-        $totalstok = Barang::orderBy('stok_baik', 'desc')->get();
-        $rusak = Barang::orderBy('stok_rusak', 'desc')->get();
+        // === SUMMARY CARD ===
+        $totalstok = Barang::sum('stok_baik'); // Hitung sum langsung lebih efisien
 
-    // TOTAL PENJUALAN (Rp)
-    $totalPenjualan = DetailBarang::whereNotNull('transaksi_keluar_id')
-        ->when($start && $end, function ($q) use ($start, $end) {
-            $q->whereHas('transaksiKeluar', function ($q2) use ($start, $end) {
-                // gunakan kolom tanggal yang benar di transaksi_keluars
-                $q2->whereDate('created_at', '>=', $start)
+        // Jika ingin list barang lengkap dengan kategori
+        $listBarangStok = Barang::with('kategori')->orderBy('stok_baik', 'desc')->get();
+        $rusak = Barang::with('kategori')->orderBy('stok_rusak', 'desc')->get();
+
+        // TOTAL PENJUALAN (Rp)
+        $totalPenjualan = DetailBarang::whereNotNull('transaksi_keluar_id')
+            ->when($start && $end, function ($q) use ($start, $end) {
+                $q->whereHas('transaksiKeluar', function ($q2) use ($start, $end) {
+                    $q2->whereDate('created_at', '>=', $start)
+                    ->whereDate('created_at', '<=', $end);
+                });
+            })
+            ->sum(DB::raw('jumlah * harga_jual'));
+
+        // TOTAL UNIT TERJUAL
+        $totalBarangTerjual = DetailBarang::whereNotNull('transaksi_keluar_id')
+            ->when($start && $end, function ($q) use ($start, $end) {
+                $q->whereHas('transaksiKeluar', function ($q2) use ($start, $end) {
+                    $q2->whereDate('created_at', '>=', $start)
+                    ->whereDate('created_at', '<=', $end);
+                });
+            })
+            ->sum('jumlah');
+
+        // TOTAL TRANSAKSI KELUAR (count)
+        $totalTransaksi = TransaksiKeluar::when($start && $end, function ($q) use ($start, $end) {
+                $q->whereDate('created_at', '>=', $start)
                 ->whereDate('created_at', '<=', $end);
-            });
-        })
-        ->sum(DB::raw('jumlah * harga_jual'));
-
-    // TOTAL UNIT TERJUAL
-    $totalBarangTerjual = DetailBarang::whereNotNull('transaksi_keluar_id')
-        ->when($start && $end, function ($q) use ($start, $end) {
-            $q->whereHas('transaksiKeluar', function ($q2) use ($start, $end) {
-                $q2->whereDate('created_at', '>=', $start)
-                ->whereDate('created_at', '<=', $end);
-            });
-        })
-        ->sum('jumlah');
-
-    // TOTAL TRANSAKSI KELUAR (count)
-    $totalTransaksi = TransaksiKeluar::when($start && $end, function ($q) use ($start, $end) {
-            $q->whereDate('created_at', '>=', $start)
-            ->whereDate('created_at', '<=', $end);
-        })
-        ->count();
+            })
+            ->count();
 
         return view('dashboard', compact(
             'filter', 'label', 'dateStrings', 'salesData',
             'barangTerlaris', 'stokMenipis', 'rusak',
-            'totalPenjualan', 'totalBarangTerjual', 'totalTransaksi', 'totalstok'
+            'totalPenjualan', 'totalBarangTerjual', 'totalTransaksi', 'listBarangStok', 'totalstok'
         ));
     }
 }

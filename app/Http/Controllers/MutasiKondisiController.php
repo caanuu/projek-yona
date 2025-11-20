@@ -22,20 +22,21 @@ class MutasiKondisiController extends Controller
             'from_status' => 'required|in:baik,rusak',
             'to_status'   => 'required|in:baik,rusak',
             'tanggal'     => 'required|date',
-            'keterangan'  => 'required|string|min:3', // DIPERBARUI DI SINI (dari nullable)
+            'keterangan'  => 'required|string',
         ]);
 
-        $mutasi = MutasiKondisi::create([
-            'barang_id'   => $request->barang_id,
-            'tanggal'     => $request->tanggal,
-            'jumlah'      => $request->jumlah,
-            'from_status' => $request->from_status,
-            'to_status'   => $request->to_status,
-            'keterangan'  => $request->keterangan,
-        ]);
-
-        // Update stok master barang
+        // Cek stok sebelum mutasi
         $barang = Barang::find($request->barang_id);
+        if ($request->from_status == 'baik' && $barang->stok_baik < $request->jumlah) {
+            return back()->withErrors(['jumlah' => 'Stok Baik tidak mencukupi!']);
+        }
+        if ($request->from_status == 'rusak' && $barang->stok_rusak < $request->jumlah) {
+            return back()->withErrors(['jumlah' => 'Stok Rusak tidak mencukupi!']);
+        }
+
+        MutasiKondisi::create($request->all());
+
+        // Update stok master
         if ($request->from_status == 'baik' && $request->to_status == 'rusak') {
             $barang->stok_baik -= $request->jumlah;
             $barang->stok_rusak += $request->jumlah;

@@ -20,7 +20,7 @@
             @foreach($stokBarangs as $stok)
                 <tr>
                     <td>{{ $stok->barang->nama_barang }}</td>
-                    <td>{{ $stok->barang->jenis_barang }}</td>
+                    <td>{{ $stok->barang->kategori->nama_kategori ?? '-' }}</td>
                     <td>{{ ucfirst($stok->kondisi) }}</td>
                     <td>{{ $stok->qty }}</td>
                     <td>{{ $stok->keterangan }}</td>

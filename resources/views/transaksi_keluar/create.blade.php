@@ -35,7 +35,7 @@
                             <option value="">-- Pilih Barang --</option>
                             @foreach ($barangs as $barang)
                                 <option value="{{ $barang->id }}">
-                                    {{ $barang->nama_barang }} ({{ $barang->jenis_barang }})
+                                    {{ $barang->nama_barang }} ({{ $barang->kategori->nama_kategori ?? '-' }})
                                 </option>
                             @endforeach
                         </select>

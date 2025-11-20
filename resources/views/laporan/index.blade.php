@@ -6,7 +6,7 @@
     <div class="container py-4">
         <h3 class="mb-4">📊 Laporan Transaksi ({{ $label }})</h3>
 
-        {{-- 📊 Filter --}}
+        {{-- Filter Form --}}
         <form method="GET" class="d-flex gap-2 align-items-center mb-4">
             <select name="filter" class="form-select" style="width:auto;" onchange="this.form.submit()">
                 <option value="week" {{ $filter == 'week' ? 'selected' : '' }}>Mingguan</option>
@@ -25,7 +25,7 @@
             <button class="btn btn-outline-primary" type="submit">Tampilkan</button>
         </form>
 
-        {{-- Navigasi Periode --}}
+        {{-- Navigasi Periode Logic --}}
         @php
             use Carbon\Carbon;
 
@@ -62,11 +62,10 @@
             }
         @endphp
 
+        {{-- Navigasi Tombol --}}
         <div class="d-flex align-items-center gap-2 mb-3">
-            {{-- Tombol Sebelumnya --}}
             <form method="GET" class="d-inline">
                 <input type="hidden" name="filter" value="{{ $filter }}">
-
                 @if ($filter == 'week')
                     <input type="hidden" name="start" value="{{ $prevStart }}">
                 @elseif($filter == 'month')
@@ -74,21 +73,13 @@
                 @elseif($filter == 'year')
                     <input type="hidden" name="year" value="{{ $prevYear->year }}">
                 @endif
-
-                <button class="btn btn-outline-secondary btn-sm" type="submit" title="Sebelumnya">
-                    &larr;
-                </button>
+                <button class="btn btn-outline-secondary btn-sm" type="submit" title="Sebelumnya">&larr;</button>
             </form>
 
-            {{-- Label Periode --}}
-            <span class="fw-semibold">
-                {{ $labelPeriode }}
-            </span>
+            <span class="fw-semibold">{{ $labelPeriode }}</span>
 
-            {{-- Tombol Berikutnya --}}
             <form method="GET" class="d-inline">
                 <input type="hidden" name="filter" value="{{ $filter }}">
-
                 @if ($filter == 'week')
                     <input type="hidden" name="start" value="{{ $nextStart }}">
                 @elseif($filter == 'month')
@@ -96,56 +87,52 @@
                 @elseif($filter == 'year')
                     <input type="hidden" name="year" value="{{ $nextYear->year }}">
                 @endif
-
                 <button class="btn btn-outline-secondary btn-sm" type="submit" title="Berikutnya"
-                    {{ $disableNext ? 'disabled' : '' }}>
-                    &rarr;
-                </button>
+                    {{ $disableNext ? 'disabled' : '' }}>&rarr;</button>
             </form>
         </div>
 
-
-
-        {{-- 📈 CASH FLOW --}}
+        {{-- CASH FLOW CARDS --}}
         <div class="row mb-4">
             <div class="col-md-4">
-                <div class="card bg-success">
+                <div class="card bg-success text-white shadow-sm">
                     <div class="card-body">
-                        <h6 class="text-white mb-1">Pemasukan (Penjualan)</h6>
-                        <h4 class="text-white">Rp {{ number_format($cashIn, 0, ',', '.') }}</h4>
+                        <h6 class="mb-1">Pemasukan (Penjualan)</h6>
+                        <h4>Rp {{ number_format($cashIn, 0, ',', '.') }}</h4>
                     </div>
                 </div>
             </div>
 
             <div class="col-md-4">
-                <div class="card bg-primary">
+                <div class="card bg-primary text-white shadow-sm">
                     <div class="card-body">
-                        <h6 class="text-white mb-1">Pengeluaran (Pembelian)</h6>
-                        <h4 class="text-white">Rp {{ number_format($cashOut, 0, ',', '.') }}</h4>
+                        <h6 class="mb-1">Pengeluaran (Pembelian)</h6>
+                        <h4>Rp {{ number_format($cashOut, 0, ',', '.') }}</h4>
                     </div>
                 </div>
             </div>
 
             <div class="col-md-4">
-                <div class="card bg-info">
+                <div class="card bg-info text-white shadow-sm">
                     <div class="card-body">
-                        <h6 class=" mb-1">Saldo / Cash Flow Bersih</h6>
-                        <h4 class="">Rp {{ number_format($cashFlow, 0, ',', '.') }}</h4>
+                        <h6 class="mb-1">Saldo / Cash Flow Bersih</h6>
+                        <h4>Rp {{ number_format($cashFlow, 0, ',', '.') }}</h4>
                     </div>
                 </div>
             </div>
         </div>
 
-        {{-- 📈 Transaksi Masuk --}}
-        <div class="card mb-4">
-            <div class="card-header bg-primary text-white d-flex justify-content-between">
-                <div class="">Transaksi Masuk</div>
-                <div><a href="{{ route('transaksi-masuk.index') }}" class="text-white">Lihat Detail -->></a></div>
+        {{-- TABEL TRANSAKSI MASUK --}}
+        <div class="card mb-4 shadow-sm border-0">
+            <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+                <div class="fw-bold">Transaksi Masuk</div>
+                <a href="{{ route('transaksi-masuk.index') }}" class="text-white text-decoration-none small">Lihat Detail
+                    &rarr;</a>
             </div>
-            <div class="card-body">
+            <div class="card-body p-0">
                 <div class="table-responsive">
-                    <table class="table table-bordered table-striped">
-                        <thead>
+                    <table class="table table-striped mb-0">
+                        <thead class="table-light">
                             <tr>
                                 <th>Kode Transaksi</th>
                                 <th>Tanggal</th>
@@ -159,23 +146,20 @@
                                 <tr>
                                     <td>{{ $tm->kode_transaksi }}</td>
                                     <td>{{ $tm->created_at->format('d M Y') }}</td>
-                                    <td>{{ $tm->supplier }}</td>
+
+                                    {{-- PERBAIKAN DI SINI: Menampilkan nama_supplier, bukan objek utuh --}}
+                                    <td>{{ $tm->supplier ? $tm->supplier->nama_supplier : 'Supplier Terhapus' }}</td>
+
                                     <td>{{ $tm->qty }}</td>
                                     <td>
                                         Rp
-                                        {{ number_format(
-                                            $tm->details->sum(function ($detail) {
-                                                return $detail->harga_beli * $detail->jumlah;
-                                            }),
-                                            0,
-                                            ',',
-                                            '.',
-                                        ) }}
+                                        {{ number_format($tm->details->sum(fn($d) => $d->harga_beli * $d->jumlah), 0, ',', '.') }}
                                     </td>
                                 </tr>
                             @empty
                                 <tr>
-                                    <td colspan="4" class="text-center">Tidak ada data</td>
+                                    <td colspan="5" class="text-center py-3 text-muted">Tidak ada data transaksi masuk
+                                        pada periode ini.</td>
                                 </tr>
                             @endforelse
                         </tbody>
@@ -184,16 +168,17 @@
             </div>
         </div>
 
-        {{-- 📈 Transaksi Keluar --}}
-        <div class="card">
-            <div class="card-header bg-success text-white d-flex justify-content-between">
-                <div>Transaksi Keluar</div>
-                <div><a href="{{ route('transaksi-keluar.index') }}" class="text-white">Lihat Detail -->></a></div>
+        {{-- TABEL TRANSAKSI KELUAR --}}
+        <div class="card shadow-sm border-0">
+            <div class="card-header bg-success text-white d-flex justify-content-between align-items-center">
+                <div class="fw-bold">Transaksi Keluar</div>
+                <a href="{{ route('transaksi-keluar.index') }}" class="text-white text-decoration-none small">Lihat Detail
+                    &rarr;</a>
             </div>
-            <div class="card-body">
+            <div class="card-body p-0">
                 <div class="table-responsive">
-                    <table class="table table-bordered table-striped">
-                        <thead>
+                    <table class="table table-striped mb-0">
+                        <thead class="table-light">
                             <tr>
                                 <th>Kode Transaksi</th>
                                 <th>Tanggal</th>
@@ -211,19 +196,13 @@
                                     <td>{{ $tk->qty }}</td>
                                     <td>
                                         Rp
-                                        {{ number_format(
-                                            $tk->details->sum(function ($detail) {
-                                                return $detail->harga_jual * $detail->jumlah;
-                                            }),
-                                            0,
-                                            ',',
-                                            '.',
-                                        ) }}
+                                        {{ number_format($tk->details->sum(fn($d) => $d->harga_jual * $d->jumlah), 0, ',', '.') }}
                                     </td>
                                 </tr>
                             @empty
                                 <tr>
-                                    <td colspan="4" class="text-center">Tidak ada data</td>
+                                    <td colspan="5" class="text-center py-3 text-muted">Tidak ada data transaksi keluar
+                                        pada periode ini.</td>
                                 </tr>
                             @endforelse
                         </tbody>

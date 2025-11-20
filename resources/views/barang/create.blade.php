@@ -4,37 +4,50 @@
 
 @section('content')
     <h2 class="mb-4">Tambah Barang Baru</h2>
-
-    @if ($errors->any())
-        <div class="alert alert-danger">
-            <strong>Whoops! Terjadi kesalahan:</strong>
-            <ul>
-                @foreach ($errors->all() as $error)
-                    <li>{{ $error }}</li>
-                @endforeach
-            </ul>
-        </div>
-    @endif
     <form action="{{ route('barang.store') }}" method="POST" class="card p-4">
         @csrf
         <div class="mb-3">
             <label class="form-label">Kode Barang</label>
-            {{-- Tambahkan value="old(...)" --}}
             <input type="text" name="kode_barang" class="form-control" value="{{ old('kode_barang') }}" required>
         </div>
+
         <div class="mb-3">
             <label class="form-label">Nama Barang</label>
-            {{-- Tambahkan value="old(...)" --}}
             <input type="text" name="nama_barang" class="form-control" value="{{ old('nama_barang') }}" required>
         </div>
+
+        {{-- Dropdown Kategori --}}
         <div class="mb-3">
-            <label class="form-label">Jenis Barang</label>
-            {{-- Tambahkan value="old(...)" --}}
-            <input type="text" name="jenis_barang" class="form-control" value="{{ old('jenis_barang') }}" required>
+            <label class="form-label">Kategori Barang</label>
+            <select name="kategori_id" class="form-select" required>
+                <option value="">-- Pilih Kategori --</option>
+                @foreach ($kategoris as $kategori)
+                    <option value="{{ $kategori->id }}" {{ old('kategori_id') == $kategori->id ? 'selected' : '' }}>
+                        {{ $kategori->nama_kategori }}
+                    </option>
+                @endforeach
+            </select>
         </div>
+
+        <div class="row">
+            <div class="col-md-6">
+                <div class="mb-3">
+                    <label class="form-label">Harga Jual (Master)</label>
+                    <input type="number" name="harga" class="form-control" value="{{ old('harga', 0) }}">
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="mb-3">
+                    <label class="form-label text-primary fw-bold">Stok Awal (Saldo Awal)</label>
+                    <input type="number" name="stok_awal" class="form-control border-primary"
+                        value="{{ old('stok_awal', 0) }}" min="0">
+                    <small class="text-muted">Isi jika barang sudah ada di gudang sebelum sistem digunakan.</small>
+                </div>
+            </div>
+        </div>
+
         <div class="mb-3">
             <label class="form-label">Keterangan</label>
-            {{-- Tambahkan value="old(...)" di dalam textarea --}}
             <textarea name="keterangan" class="form-control">{{ old('keterangan') }}</textarea>
         </div>
 
