@@ -18,7 +18,6 @@ Route::post('/logout', [LoginController::class, 'logout'])->name('logout');
 
 Route::middleware('auth')->group(function () {
 
-    // --- HOME REDIRECT ---
     Route::get('/home', function () {
         /** @var \App\Models\User $user */
         $user = Auth::user();
@@ -45,23 +44,25 @@ Route::middleware('auth')->group(function () {
         Route::get('barang/{barang}/edit', [BarangController::class, 'edit'])->name('barang.edit');
         Route::put('barang/{barang}', [BarangController::class, 'update'])->name('barang.update');
 
+        // Custom Routes Transaksi Masuk (TARUH SEBELUM RESOURCE/STORE)
+        Route::get('/transaksi-masuk/export', [TransaksiMasukController::class, 'export'])->name('transaksi-masuk.export');
         Route::get('transaksi-masuk', [TransaksiMasukController::class, 'index'])->name('transaksi-masuk.index');
         Route::get('transaksi-masuk/create', [TransaksiMasukController::class, 'create'])->name('transaksi-masuk.create');
         Route::post('transaksi-masuk', [TransaksiMasukController::class, 'store'])->name('transaksi-masuk.store');
-        Route::get('/transaksi-masuk/export', [TransaksiMasukController::class, 'export'])->name('transaksi-masuk.export');
 
         Route::resource('mutasi-kondisi', MutasiKondisiController::class)->only(['create', 'store']);
         Route::get('list', [BarangController::class, 'list'])->name('barang.list');
         Route::get('rusak', [BarangController::class, 'rusak'])->name('barang.rusak');
     });
 
-    // --- ADMIN & KASIR (FITUR KASIR LENGKAP) ---
+    // --- ADMIN & KASIR ---
     Route::middleware('role:admin,kasir')->group(function () {
-        // Resource route mengcover: index, create, store, edit, update, destroy
-        Route::resource('transaksi-keluar', TransaksiKeluarController::class);
-
+        // !!! PERBAIKAN DISINI: Custom Route WAJIB DI ATAS Resource !!!
         Route::get('/transaksi-keluar/export', [TransaksiKeluarController::class, 'export'])->name('transaksi-keluar.export');
         Route::get('/transaksi-keluar/{id}/print', [TransaksiKeluarController::class, 'print'])->name('transaksi-keluar.print');
+
+        // Resource Route
+        Route::resource('transaksi-keluar', TransaksiKeluarController::class);
 
         Route::get('/get-stok-barang/{id}', [BarangController::class, 'getStok'])->name('barang.getStok');
     });
