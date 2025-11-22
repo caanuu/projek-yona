@@ -7,10 +7,11 @@ use Maatwebsite\Excel\Concerns\WithHeadings;
 use Maatwebsite\Excel\Concerns\WithMapping;
 use Maatwebsite\Excel\Concerns\ShouldAutoSize;
 use Maatwebsite\Excel\Concerns\WithStyles;
-use Maatwebsite\Excel\Concerns\WithEvents; // Tambahan 1
-use Maatwebsite\Excel\Events\AfterSheet; // Tambahan 2
+use Maatwebsite\Excel\Concerns\WithEvents;
+use Maatwebsite\Excel\Events\AfterSheet;
 use PhpOffice\PhpSpreadsheet\Worksheet\Worksheet;
-use PhpOffice\PhpSpreadsheet\Style\Border; // Tambahan 3
+use PhpOffice\PhpSpreadsheet\Style\Border;
+use PhpOffice\PhpSpreadsheet\Style\Alignment;
 
 class TransaksiKeluarExport implements FromCollection, WithHeadings, WithMapping, ShouldAutoSize, WithStyles, WithEvents
 {
@@ -33,18 +34,35 @@ class TransaksiKeluarExport implements FromCollection, WithHeadings, WithMapping
             'Customer',
             'Tanggal',
             'Kasir',
-            'Barang',
-            'Jumlah',
-            'Harga Jual',
+            'Barang',       // Kolom E
+            'Jumlah',       // Kolom F
+            'Harga Jual',   // Kolom G
             'Total Pendapatan',
         ];
     }
 
     public function map($trx): array
     {
-        $barangList = $trx->details->map(fn($d) => $d->barang->nama_barang ?? 'Barang Dihapus')->join(", \n");
-        $jumlahList = $trx->details->pluck('jumlah')->join("\n");
-        $hargaList = $trx->details->map(fn($d) => 'Rp ' . number_format($d->harga_jual, 0, ',', '.'))->join("\n");
+        // 1. Buat List Barang dengan Bullet Point (•)
+        // Contoh hasil:
+        // • Laptop
+        // • Mouse
+        $barangList = $trx->details->map(function ($d) {
+            $nama = $d->barang->nama_barang ?? 'Barang Dihapus';
+            return "• " . $nama;
+        })->join("\n"); // Gabung dengan Enter
+
+        // 2. Buat List Jumlah sesuai urutan barang
+        $jumlahList = $trx->details->map(function ($d) {
+            return $d->jumlah . " pcs";
+        })->join("\n");
+
+        // 3. Buat List Harga sesuai urutan barang
+        $hargaList = $trx->details->map(function ($d) {
+            return 'Rp ' . number_format($d->harga_jual, 0, ',', '.');
+        })->join("\n");
+
+        // Hitung Total
         $totalPendapatan = $trx->details->sum(fn($d) => $d->jumlah * $d->harga_jual);
 
         return [
@@ -52,46 +70,54 @@ class TransaksiKeluarExport implements FromCollection, WithHeadings, WithMapping
             $trx->customer,
             $trx->created_at->format('d-m-Y H:i'),
             $trx->user->name ?? '-',
-            $barangList,
+            $barangList, // Hasil map di atas
             $jumlahList,
             $hargaList,
             'Rp ' . number_format($totalPendapatan, 0, ',', '.'),
         ];
     }
 
-    // Style Header & Alignment
     public function styles(Worksheet $sheet)
     {
         return [
+            // Header Style
             1 => [
                 'font' => ['bold' => true, 'size' => 12],
-                'alignment' => ['horizontal' => \PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER],
+                'alignment' => [
+                    'horizontal' => Alignment::HORIZONTAL_CENTER,
+                    'vertical' => Alignment::VERTICAL_CENTER,
+                ],
                 'fill' => [
                     'fillType' => \PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID,
-                    'startColor' => ['argb' => 'FFD3D3D3'], // Warna abu-abu untuk header
+                    'startColor' => ['argb' => 'FFD3D3D3'],
                 ],
             ],
+
+            // Style Global untuk Data (A sampai H)
             'A:H' => [
-                'alignment' => ['vertical' => \PhpOffice\PhpSpreadsheet\Style\Alignment::VERTICAL_TOP],
+                'alignment' => [
+                    'vertical' => Alignment::VERTICAL_TOP, // Teks mulai dari atas sel
+                    'wrapText' => true, // WAJIB: Agar \n (enter) terbaca sebagai baris baru
+                ],
             ],
-            // Rata tengah untuk kolom Kode, Tanggal, Jumlah
-            'A' => ['alignment' => ['horizontal' => 'center']],
-            'C' => ['alignment' => ['horizontal' => 'center']],
-            'F' => ['alignment' => ['horizontal' => 'center']],
+
+            // Alignment Khusus per Kolom
+            'A' => ['alignment' => ['horizontal' => Alignment::HORIZONTAL_CENTER]], // Kode
+            'C' => ['alignment' => ['horizontal' => Alignment::HORIZONTAL_CENTER]], // Tanggal
+            'F' => ['alignment' => ['horizontal' => Alignment::HORIZONTAL_CENTER]], // Jumlah
+            'G' => ['alignment' => ['horizontal' => Alignment::HORIZONTAL_RIGHT]],  // Harga
+            'H' => ['alignment' => ['horizontal' => Alignment::HORIZONTAL_RIGHT, 'vertical' => Alignment::VERTICAL_CENTER]], // Total (Tengah Vertikal biar rapi)
         ];
     }
 
-    // Event untuk Menambah Border & Tulisan Total Data
     public function registerEvents(): array
     {
         return [
             AfterSheet::class => function (AfterSheet $event) {
                 $sheet = $event->sheet;
-
-                // Hitung baris terakhir (Header + Data)
                 $highestRow = $sheet->getHighestRow();
 
-                // 1. Buat BORDER Hitam untuk seluruh tabel (A1 sampai H paling bawah)
+                // Beri Border Hitam ke seluruh tabel
                 $sheet->getStyle('A1:H' . $highestRow)->applyFromArray([
                     'borders' => [
                         'allBorders' => [
@@ -101,9 +127,9 @@ class TransaksiKeluarExport implements FromCollection, WithHeadings, WithMapping
                     ],
                 ]);
 
-                // 2. Tambahan Info TOTAL DATA di bawah tabel
-                $footerRow = $highestRow + 2; // Beri jarak 1 baris kosong
-                $sheet->setCellValue('A' . $footerRow, 'Total Data Transaksi: ' . $this->data->count());
+                // Tambahan Info Total Data di bawah tabel
+                $footerRow = $highestRow + 2;
+                $sheet->setCellValue('A' . $footerRow, 'Total Transaksi: ' . $this->data->count());
                 $sheet->getStyle('A' . $footerRow)->getFont()->setBold(true)->setItalic(true);
             },
         ];
